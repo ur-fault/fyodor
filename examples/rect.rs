@@ -6,15 +6,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     const SIZE: (i32, i32) = (20, 10);
 
     loop {
-        for x in 0..SIZE.0 {
-            for y in 0..SIZE.1 {
-                renderer.canvas().draw((x, y), "█");
-            }
-        }
-
-        renderer.canvas().draw((0, SIZE.1), "Press Enter to exit");
-        renderer.render()?;
-
         let event = crossterm::event::read()?;
 
         match event {
@@ -25,6 +16,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }) if kind != crossterm::event::KeyEventKind::Release => break,
             _ => {}
         }
+
+        for x in 0..SIZE.0 {
+            for y in 0..SIZE.1 {
+                renderer.canvas().draw((x, y), "█");
+            }
+        }
+
+        renderer.canvas().draw((0, SIZE.1), "Press Enter to exit");
+        renderer.render()?;
     }
 
     Ok(())

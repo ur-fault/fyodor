@@ -11,6 +11,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .no_clip();
 
     loop {
+        let event = crossterm::event::read()?;
+
+        match event {
+            crossterm::event::Event::Key(crossterm::event::KeyEvent {
+                code: crossterm::event::KeyCode::Enter,
+                kind,
+                ..
+            }) if kind != crossterm::event::KeyEventKind::Release => break,
+            _ => {}
+        }
+
         renderer.canvas().draw((0, 0), "Press Enter to exit");
         renderer.canvas().draw(
             (0, 1),
@@ -36,17 +47,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         renderer.canvas().draw((0, 19), "Unclipped frame");
 
         renderer.render()?;
-
-        let event = crossterm::event::read()?;
-
-        match event {
-            crossterm::event::Event::Key(crossterm::event::KeyEvent {
-                code: crossterm::event::KeyCode::Enter,
-                kind,
-                ..
-            }) if kind != crossterm::event::KeyEventKind::Release => break,
-            _ => {}
-        }
     }
 
     Ok(())

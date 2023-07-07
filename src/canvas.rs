@@ -1,6 +1,3 @@
-use crossterm::style::ContentStyle;
-use unicode_width::UnicodeWidthChar;
-
 use crate::{
     drawable::Drawable,
     renderer::{Cell, Dims},

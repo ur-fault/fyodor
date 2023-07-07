@@ -2,7 +2,6 @@ use std::marker::PhantomData;
 
 use crate::{
     canvas::Canvas,
-    drawable::Drawable,
     renderer::{Cell, Dims},
 };
 

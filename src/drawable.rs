@@ -1,7 +1,7 @@
 use crossterm::style::ContentStyle;
 use unicode_width::UnicodeWidthChar;
 
-use crate::{canvas::Canvas, frame::FrameLike};
+use crate::frame::FrameLike;
 
 use super::renderer::{Cell, Dims};
 

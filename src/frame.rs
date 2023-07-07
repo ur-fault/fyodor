@@ -6,7 +6,6 @@ use crate::{
 };
 
 pub trait FrameLike {
-    // fn draw(&mut self, pos: Dims, content: impl Drawable);
     fn set(&mut self, pos: Dims, cell: Cell);
     fn pos(&self) -> Dims;
     fn size(&self) -> Dims;

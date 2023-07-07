@@ -17,7 +17,6 @@ impl Canvas {
         Canvas { buffer, size }
     }
     pub fn set(&mut self, pos: Dims, cell: Cell) {
-        // self.buffer[pos.1 as usize][pos.0 as usize] = cell;
         if let Some(c) = self
             .buffer
             .get_mut(pos.1 as usize)

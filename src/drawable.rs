@@ -1,26 +1,26 @@
 use crossterm::style::ContentStyle;
 use unicode_width::UnicodeWidthChar;
 
-use crate::frame::FrameLike;
+use crate::canvas::CanvasLike;
 
 use super::renderer::{Cell, Dims};
 
 pub trait Drawable {
     fn draw<F>(&self, pos: Dims, frame: &mut F)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         self.draw_styled(pos, frame, ContentStyle::default())
     }
     fn draw_styled<F>(&self, pos: Dims, frame: &mut F, style: ContentStyle)
     where
-        F: FrameLike;
+        F: CanvasLike;
 }
 
 impl Drawable for char {
     fn draw_styled<F>(&self, (x, y): Dims, frame: &mut F, style: ContentStyle)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         if x >= frame.size().0 || y >= frame.size().1 {
             return;
@@ -44,14 +44,14 @@ impl Drawable for char {
 impl Drawable for String {
     fn draw<F>(&self, pos: Dims, frame: &mut F)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         self.as_str().draw(pos, frame);
     }
 
     fn draw_styled<F>(&self, pos: Dims, frame: &mut F, style: ContentStyle)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         self.as_str().draw_styled(pos, frame, style);
     }
@@ -60,7 +60,7 @@ impl Drawable for String {
 impl<'a> Drawable for &'a str {
     fn draw<F>(&self, pos: Dims, frame: &mut F)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         let mut i = 0;
         for chr in self.chars() {
@@ -71,7 +71,7 @@ impl<'a> Drawable for &'a str {
 
     fn draw_styled<F>(&self, pos: Dims, frame: &mut F, style: ContentStyle)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         let mut i = 0;
         for character in self.chars() {
@@ -84,14 +84,14 @@ impl<'a> Drawable for &'a str {
 impl Drawable for Cell {
     fn draw<F>(&self, pos: Dims, frame: &mut F)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         frame.set(pos, *self);
     }
 
     fn draw_styled<F>(&self, pos: Dims, frame: &mut F, style: ContentStyle)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         let mut cell = *self;
         if let Cell::Content(content) = &mut cell {
@@ -105,14 +105,14 @@ impl Drawable for Cell {
 impl<D: Drawable> Drawable for (D, ContentStyle) {
     fn draw<F>(&self, pos: Dims, frame: &mut F)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         self.0.draw_styled(pos, frame, self.1);
     }
 
     fn draw_styled<F>(&self, pos: Dims, frame: &mut F, style: ContentStyle)
     where
-        F: FrameLike,
+        F: CanvasLike,
     {
         self.0.draw_styled(pos, frame, style);
     }

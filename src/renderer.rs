@@ -21,8 +21,8 @@ impl Renderer {
         let size = term_size();
         let size = (size.0 as i32, size.1 as i32);
 
-        let hidden = Canvas::new(size);
-        let shown = Canvas::new(size);
+        let hidden = Canvas::from_dims(size);
+        let shown = Canvas::from_dims(size);
 
         let mut ren = Renderer {
             size,
@@ -76,8 +76,8 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn canvas(&mut self) -> &mut Canvas {
-        &mut self.hidden
+    pub fn canvas(&mut self) -> Canvas {
+        self.hidden.clone()
     }
 
     pub fn render(&mut self) -> CRResult<()> {
@@ -87,7 +87,10 @@ impl Renderer {
         tty.queue(crossterm::style::ResetColor)?;
 
         for y in 0..self.size.1 {
-            if self.hidden[y] == self.shown[y] && !self.full_redraw {
+            if self.hidden.get_buf().buf_ref()[y as usize]
+                == self.shown.get_buf().buf_ref()[y as usize]
+                && !self.full_redraw
+            {
                 continue;
             }
 
@@ -97,7 +100,7 @@ impl Renderer {
             ))?;
 
             for x in 0..self.size.0 {
-                if let Cell::Content(c) = &self.hidden[y][x as usize] {
+                if let Cell::Content(c) = &self.hidden.get_buf().buf_ref()[y as usize][x as usize] {
                     if style != c.style {
                         if style.background_color != c.style.background_color {
                             match c.style.background_color {

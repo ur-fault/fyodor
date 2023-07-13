@@ -1,18 +1,59 @@
-use std::io::{stdout, Write};
+use std::{
+    cell::RefCell,
+    io::{stdout, Write},
+    panic,
+    rc::Rc,
+};
 
-use crossterm::{event::Event, style::ContentStyle, QueueableCommand, Result as CRResult};
-use unicode_width::UnicodeWidthChar;
+use crossterm::{event::Event, execute, style::ContentStyle, QueueableCommand, Result as CRResult};
 
-use crate::canvas::Canvas;
+use crate::{
+    canvas::{Canvas, CanvasLike},
+    cell::Cell,
+};
 
 use super::helpers::term_size;
 
 pub type Dims = (i32, i32);
 
-pub struct Renderer {
-    size: Dims,
+pub struct RenderSpace {
     shown: Canvas,
     hidden: Canvas,
+}
+
+impl RenderSpace {
+    pub fn new(size: Dims) -> Self {
+        Self {
+            shown: Canvas::from_dims(size),
+            hidden: Canvas::from_dims(size),
+        }
+    }
+
+    pub fn canvas(&self) -> Canvas {
+        self.hidden.clone()
+    }
+
+    pub fn other(&self) -> Canvas {
+        self.shown.clone()
+    }
+
+    pub fn both_mut(&mut self) -> (&mut Canvas, &mut Canvas) {
+        (&mut self.hidden, &mut self.shown)
+    }
+
+    fn on_resize(&mut self, size: Dims) -> CRResult<()> {
+        self.shown.resize(size);
+        self.hidden.resize(size);
+
+        Ok(())
+    }
+}
+
+pub type SharedRenderSpace = Rc<RefCell<RenderSpace>>;
+
+pub struct Renderer {
+    size: Dims,
+    render_space: SharedRenderSpace,
     full_redraw: bool,
 }
 
@@ -21,19 +62,33 @@ impl Renderer {
         let size = term_size();
         let size = (size.0 as i32, size.1 as i32);
 
-        let hidden = Canvas::from_dims(size);
-        let shown = Canvas::from_dims(size);
-
         let mut ren = Renderer {
             size,
-            shown,
-            hidden,
+            render_space: Rc::new(RefCell::new(RenderSpace::new(size))),
             full_redraw: true,
         };
 
+        ren.register_panic_hook();
         ren.turn_on()?;
 
         Ok(ren)
+    }
+
+    fn register_panic_hook(&self) {
+        panic::set_hook(Box::new(move |panic_info| {
+            let mut stdout = stdout();
+
+            execute!(stdout, crossterm::terminal::LeaveAlternateScreen).unwrap();
+            execute!(stdout, crossterm::cursor::Show).unwrap();
+
+            crossterm::terminal::disable_raw_mode().unwrap();
+
+            better_panic::Settings::auto().create_panic_handler()(panic_info);
+        }));
+    }
+
+    fn unregiser_panic_hook(&self) {
+        let _ = panic::take_hook();
     }
 
     fn turn_on(&mut self) -> CRResult<()> {
@@ -49,7 +104,7 @@ impl Renderer {
         Ok(())
     }
 
-    fn turn_off(&mut self) -> CRResult<()> {
+    pub fn turn_off(&mut self) -> CRResult<()> {
         crossterm::execute!(
             stdout(),
             crossterm::cursor::Show,
@@ -61,8 +116,7 @@ impl Renderer {
 
     fn on_resize(&mut self, size: Option<Dims>) -> CRResult<()> {
         self.size = size.unwrap_or_else(|| term_size());
-        self.shown.resize(self.size);
-        self.hidden.resize(self.size);
+        self.render_space.borrow_mut().on_resize(self.size)?;
         self.full_redraw = true;
 
         Ok(())
@@ -76,8 +130,12 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn canvas(&mut self) -> Canvas {
-        self.hidden.clone()
+    pub fn canvas(&self) -> Canvas {
+        self.render_space.borrow().canvas().clone()
+    }
+
+    pub fn get_render_space(&self) -> SharedRenderSpace {
+        self.render_space.clone()
     }
 
     pub fn render(&mut self) -> CRResult<()> {
@@ -87,8 +145,8 @@ impl Renderer {
         tty.queue(crossterm::style::ResetColor)?;
 
         for y in 0..self.size.1 {
-            if self.hidden.get_buf().buf_ref()[y as usize]
-                == self.shown.get_buf().buf_ref()[y as usize]
+            if self.render_space.borrow().canvas().get_buf().buf_ref()[y as usize]
+                == self.render_space.borrow().other().get_buf().buf_ref()[y as usize]
                 && !self.full_redraw
             {
                 continue;
@@ -96,11 +154,13 @@ impl Renderer {
 
             tty.queue(crossterm::cursor::MoveTo(
                 0,
-                y.max(0).min(u16::MAX as i32) as u16, // clamp i32 to u16 range
+                y.clamp(u16::MIN as i32, u16::MAX as i32) as u16,
             ))?;
 
             for x in 0..self.size.0 {
-                if let Cell::Content(c) = &self.hidden.get_buf().buf_ref()[y as usize][x as usize] {
+                if let Cell::Content(c) =
+                    &self.render_space.borrow().canvas().get_buf().buf_ref()[y as usize][x as usize]
+                {
                     if style != c.style {
                         if style.background_color != c.style.background_color {
                             match c.style.background_color {
@@ -148,9 +208,13 @@ impl Renderer {
         tty.flush()?;
         self.full_redraw = false;
 
-        std::mem::swap(&mut self.shown, &mut self.hidden);
+        {
+            let mut binding = self.render_space.borrow_mut();
+            let (hidden, shown) = binding.both_mut();
+            std::mem::swap(hidden, shown);
+        }
 
-        self.hidden.clear();
+        self.render_space.borrow_mut().canvas().clear();
 
         Ok(())
     }
@@ -158,34 +222,21 @@ impl Renderer {
 
 impl Drop for Renderer {
     fn drop(&mut self) {
+        self.unregiser_panic_hook();
         let _ = self.turn_off();
     }
 }
 
-#[derive(Debug, Copy, Clone, Default, PartialEq, Eq)]
-pub struct CellContent {
-    pub character: char,
-    pub width: u8,
-    pub style: ContentStyle,
-}
-
-#[derive(Debug, Copy, Clone, Default, PartialEq, Eq)]
-pub enum Cell {
-    #[default]
-    PlaceHolder,
-    Content(CellContent),
-}
-
-impl Cell {
-    pub fn styled(c: char, s: ContentStyle) -> Self {
-        Cell::Content(CellContent {
-            character: c,
-            width: c.width().unwrap_or(1) as u8,
-            style: s,
-        })
+impl CanvasLike for SharedRenderSpace {
+    fn set(&mut self, pos: Dims, cell: Cell) {
+        self.borrow_mut().canvas().set(pos, cell);
     }
 
-    pub fn new(c: char) -> Self {
-        Cell::styled(c, ContentStyle::default())
+    fn pos(&self) -> Dims {
+        (0, 0)
+    }
+
+    fn size(&self) -> Dims {
+        self.borrow().canvas().size()
     }
 }

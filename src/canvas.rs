@@ -3,10 +3,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::{
-    drawable::Drawable,
-    renderer::{Cell, Dims},
-};
+use crate::{cell::Cell, drawable::Drawable, renderer::Dims};
 
 pub struct Buffer {
     buffer: Vec<Vec<Cell>>,
@@ -99,7 +96,7 @@ impl Canvas {
     }
 
     pub fn draw(&mut self, pos: Dims, content: impl Drawable) {
-        content.draw(pos, self);
+        content.draw(pos, self)
     }
 
     pub fn resize(&mut self, size: Dims) {
@@ -125,5 +122,22 @@ impl CanvasLike for Canvas {
 
     fn size(&self) -> Dims {
         self.size()
+    }
+}
+
+impl<T> CanvasLike for &mut T
+where
+    T: CanvasLike,
+{
+    fn set(&mut self, pos: Dims, cell: Cell) {
+        (**self).set(pos, cell);
+    }
+
+    fn pos(&self) -> Dims {
+        (**self).pos()
+    }
+
+    fn size(&self) -> Dims {
+        (**self).size()
     }
 }

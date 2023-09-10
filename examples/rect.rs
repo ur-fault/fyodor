@@ -1,4 +1,4 @@
-use terminal_renderer::{renderer::Renderer, canvas::CanvasLikeExt};
+use terminal_renderer::{canvas::CanvasLikeExt, renderer::Renderer};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut renderer = Renderer::new()?;

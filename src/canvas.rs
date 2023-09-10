@@ -139,11 +139,14 @@ where
 }
 
 pub trait CanvasLikeExt: CanvasLike {
-    fn draw(&mut self, pos: Dims, content: impl Drawable);
+    fn draw<D: Drawable>(&mut self, pos: D::Pos, content: D);
 }
 
-impl<C: CanvasLike> CanvasLikeExt for C {
-    fn draw(&mut self, pos: Dims, content: impl Drawable) {
+impl<C> CanvasLikeExt for C
+where
+    C: CanvasLike,
+{
+    fn draw<D: Drawable>(&mut self, pos: D::Pos, content: D) {
         content.draw(pos, self);
     }
 }

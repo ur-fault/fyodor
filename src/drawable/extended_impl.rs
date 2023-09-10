@@ -6,6 +6,8 @@ use crate::{canvas::CanvasLike, cell::Cell, renderer::Dims};
 use super::Drawable;
 
 impl<'a> Drawable for (&'a str, ContentStyle) {
+    type Pos = Dims;
+
     fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
         let mut i = 0;
         for chr in self.0.chars() {
@@ -16,6 +18,8 @@ impl<'a> Drawable for (&'a str, ContentStyle) {
 }
 
 impl Drawable for (char, ContentStyle) {
+    type Pos = Dims;
+
     fn draw(&self, (x, y): Dims, frame: &mut impl CanvasLike) {
         let style = self.1;
 
@@ -48,13 +52,17 @@ impl<'a> CenteredString<'a> {
 }
 
 impl<'a> Drawable for CenteredString<'a> {
-    fn draw(&self, (_, y): Dims, frame: &mut impl CanvasLike) {
-        (*self, ContentStyle::default()).draw((0, y), frame);
+    type Pos = i32;
+
+    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
+        (*self, ContentStyle::default()).draw(y, frame);
     }
 }
 
 impl<'a> Drawable for (CenteredString<'a>, ContentStyle) {
-    fn draw(&self, (_, y): Dims, frame: &mut impl CanvasLike) {
+    type Pos = i32;
+
+    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
         let x = (frame.size().0 - self.0 .0.width() as i32) / 2;
         (self.0 .0, self.1).draw((x, y), frame);
     }
@@ -80,13 +88,17 @@ impl<'a> RightAlignedString<'a> {
 }
 
 impl<'a> Drawable for RightAlignedString<'a> {
-    fn draw(&self, (_, y): Dims, frame: &mut impl CanvasLike) {
-        (*self, ContentStyle::default()).draw((0, y), frame);
+    type Pos = i32;
+
+    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
+        (*self, ContentStyle::default()).draw(y, frame);
     }
 }
 
 impl<'a> Drawable for (RightAlignedString<'a>, ContentStyle) {
-    fn draw(&self, (_, y): Dims, frame: &mut impl CanvasLike) {
+    type Pos = i32;
+
+    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
         let x = frame.size().0 - self.0 .0.width() as i32;
         (self.0 .0, self.1).draw((x, y), frame);
     }
@@ -99,5 +111,24 @@ pub trait RightAlignedStringExt<'a> {
 impl<'a> RightAlignedStringExt<'a> for &'a str {
     fn right(self) -> RightAlignedString<'a> {
         RightAlignedString::new(self)
+    }
+}
+
+pub struct X(pub i32);
+pub struct Y(pub i32);
+
+impl<D: Drawable<Pos = Dims>> Drawable for (D, X) {
+    type Pos = i32;
+
+    fn draw(&self, pos: Self::Pos, frame: &mut impl CanvasLike) {
+        self.0.draw((self.1 .0, pos), frame);
+    }
+}
+
+impl<D: Drawable<Pos = Dims>> Drawable for (D, Y) {
+    type Pos = i32;
+
+    fn draw(&self, pos: Self::Pos, frame: &mut impl CanvasLike) {
+        self.0.draw((pos, self.1 .0), frame);
     }
 }

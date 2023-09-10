@@ -1,46 +1,11 @@
-pub mod misc;
+pub mod core_impl;
+pub mod extended_impl;
+pub mod mics;
 
-use crossterm::style::ContentStyle;
-use unicode_width::UnicodeWidthChar;
-
-use crate::{canvas::CanvasLike, cell::Cell};
-
-use super::renderer::Dims;
+use crate::canvas::CanvasLike;
 
 pub trait Drawable {
-    fn draw(&self, pos: Dims, frame: &mut impl CanvasLike);
-}
+    type Pos;
 
-impl Drawable for char {
-    fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
-        (*self, ContentStyle::default()).draw(pos, frame);
-    }
-}
-
-impl Drawable for String {
-    fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
-        self.as_str().draw(pos, frame);
-    }
-}
-
-impl Drawable for (String, ContentStyle) {
-    fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
-        (self.0.as_str(), self.1).draw((pos.0, pos.1), frame);
-    }
-}
-
-impl<'a> Drawable for &'a str {
-    fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
-        let mut i = 0;
-        for chr in self.chars() {
-            chr.draw((pos.0 + i as i32, pos.1), frame);
-            i += chr.width().unwrap_or(1) as i32;
-        }
-    }
-}
-
-impl Drawable for Cell {
-    fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
-        frame.set(pos, *self);
-    }
+    fn draw(&self, pos: Self::Pos, frame: &mut impl CanvasLike);
 }

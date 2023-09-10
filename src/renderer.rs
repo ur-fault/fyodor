@@ -1,11 +1,11 @@
 use std::{
     cell::RefCell,
-    io::{stdout, Write},
+    io::{self, stdout, Write},
     panic,
     rc::Rc,
 };
 
-use crossterm::{event::Event, execute, style::ContentStyle, QueueableCommand, Result as CRResult};
+use crossterm::{event::Event, execute, style::ContentStyle, QueueableCommand};
 
 use crate::{
     canvas::{Canvas, CanvasLike},
@@ -41,7 +41,7 @@ impl RenderSpace {
         (&mut self.hidden, &mut self.shown)
     }
 
-    fn on_resize(&mut self, size: Dims) -> CRResult<()> {
+    fn on_resize(&mut self, size: Dims) -> io::Result<()> {
         self.shown.resize(size);
         self.hidden.resize(size);
 
@@ -58,7 +58,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn new() -> CRResult<Self> {
+    pub fn new() -> io::Result<Self> {
         let size = term_size();
         let size = (size.0 as i32, size.1 as i32);
 
@@ -91,7 +91,7 @@ impl Renderer {
         let _ = panic::take_hook();
     }
 
-    fn turn_on(&mut self) -> CRResult<()> {
+    fn turn_on(&mut self) -> io::Result<()> {
         crossterm::terminal::enable_raw_mode()?;
         crossterm::execute!(
             stdout(),
@@ -104,7 +104,7 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn turn_off(&mut self) -> CRResult<()> {
+    pub fn turn_off(&mut self) -> io::Result<()> {
         crossterm::execute!(
             stdout(),
             crossterm::cursor::Show,
@@ -114,7 +114,7 @@ impl Renderer {
         Ok(())
     }
 
-    fn on_resize(&mut self, size: Option<Dims>) -> CRResult<()> {
+    fn on_resize(&mut self, size: Option<Dims>) -> io::Result<()> {
         self.size = size.unwrap_or_else(|| term_size());
         self.render_space.borrow_mut().on_resize(self.size)?;
         self.full_redraw = true;
@@ -122,7 +122,7 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn on_event(&mut self, event: &Event) -> CRResult<()> {
+    pub fn on_event(&mut self, event: &Event) -> io::Result<()> {
         if let Event::Resize(x, ref y) = event {
             self.on_resize(Some((*x as i32, *y as i32)))?
         }
@@ -138,7 +138,7 @@ impl Renderer {
         self.render_space.clone()
     }
 
-    pub fn render(&mut self) -> CRResult<()> {
+    pub fn render(&mut self) -> io::Result<()> {
         let mut tty = stdout();
 
         let mut style = ContentStyle::default();

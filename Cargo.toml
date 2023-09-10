@@ -9,5 +9,5 @@ description = "Double buffered terminal renderer for Rust"
 
 [dependencies]
 better-panic = "0.3.0"
-crossterm = "0.26.1"
+crossterm = "0.27"
 unicode-width = "0.1.10"

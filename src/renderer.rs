@@ -51,6 +51,20 @@ impl RenderSpace {
 
 pub type SharedRenderSpace = Rc<RefCell<RenderSpace>>;
 
+impl CanvasLike for SharedRenderSpace {
+    fn set(&mut self, pos: Dims, cell: Cell) {
+        self.borrow_mut().canvas().set(pos, cell)
+    }
+
+    fn pos(&self) -> Dims {
+        self.borrow().canvas().pos()
+    }
+
+    fn size(&self) -> Dims {
+        self.borrow().canvas().size()
+    }
+}
+
 pub struct Renderer {
     size: Dims,
     render_space: SharedRenderSpace,
@@ -104,7 +118,9 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn turn_off(&mut self) -> io::Result<()> {
+    pub fn turn_off(self) {} // we drop self, which calls internal version
+
+    fn turn_off_internal(&mut self) -> io::Result<()> {
         crossterm::execute!(
             stdout(),
             crossterm::cursor::Show,
@@ -123,7 +139,7 @@ impl Renderer {
     }
 
     pub fn on_event(&mut self, event: &Event) -> io::Result<()> {
-        if let Event::Resize(x, ref y) = event {
+        if let Event::Resize(x, y) = event {
             self.on_resize(Some((*x as i32, *y as i32)))?
         }
 
@@ -223,20 +239,6 @@ impl Renderer {
 impl Drop for Renderer {
     fn drop(&mut self) {
         self.unregiser_panic_hook();
-        let _ = self.turn_off();
-    }
-}
-
-impl CanvasLike for SharedRenderSpace {
-    fn set(&mut self, pos: Dims, cell: Cell) {
-        self.borrow_mut().canvas().set(pos, cell);
-    }
-
-    fn pos(&self) -> Dims {
-        (0, 0)
-    }
-
-    fn size(&self) -> Dims {
-        self.borrow().canvas().size()
+        let _ = self.turn_off_internal();
     }
 }

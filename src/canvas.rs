@@ -95,10 +95,6 @@ impl Canvas {
         self.buffer.borrow()
     }
 
-    pub fn draw(&mut self, pos: Dims, content: impl Drawable) {
-        content.draw(pos, self)
-    }
-
     pub fn resize(&mut self, size: Dims) {
         self.buffer.borrow_mut().resize(size);
     }
@@ -139,5 +135,15 @@ where
 
     fn size(&self) -> Dims {
         (**self).size()
+    }
+}
+
+pub trait CanvasLikeExt: CanvasLike {
+    fn draw(&mut self, pos: Dims, content: impl Drawable);
+}
+
+impl<C: CanvasLike> CanvasLikeExt for C {
+    fn draw(&mut self, pos: Dims, content: impl Drawable) {
+        content.draw(pos, self);
     }
 }

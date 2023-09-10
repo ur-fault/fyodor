@@ -10,7 +10,7 @@ impl<'a> Drawable for (&'a str, ContentStyle) {
         let mut i = 0;
         for chr in self.0.chars() {
             (chr, self.1).draw((pos.0 + i as i32, pos.1), frame);
-            i += chr.width().unwrap_or(1) as i32;
+            i += chr.width().unwrap_or(0) as i32;
         }
     }
 }
@@ -23,7 +23,7 @@ impl Drawable for (char, ContentStyle) {
             return;
         }
 
-        let width = self.0.width().unwrap_or(1) as i32;
+        let width = self.0.width().unwrap_or(0) as i32;
         if width == 0 {
             return;
         }

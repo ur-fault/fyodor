@@ -3,7 +3,11 @@ use std::{
     rc::Rc,
 };
 
-use crate::{cell::Cell, drawable::Drawable, renderer::Dims};
+use crate::{
+    cell::Cell,
+    drawable::Drawable,
+    layout::{Dims, Pos},
+};
 
 pub struct Buffer {
     buffer: Vec<Vec<Cell>>,
@@ -13,8 +17,8 @@ pub struct Buffer {
 impl Buffer {
     pub fn new(size: Dims) -> Self {
         let mut buffer = Vec::new();
-        for _ in 0..size.1 {
-            buffer.push(vec![Cell::new(' '); size.0 as usize]);
+        for _ in 0..size.y {
+            buffer.push(vec![Cell::new(' '); size.x as usize]);
         }
         Buffer { buffer, size }
     }
@@ -33,9 +37,9 @@ impl Buffer {
         }
 
         self.size = size;
-        self.buffer.resize(size.1 as usize, Vec::new());
+        self.buffer.resize(size.y as usize, Vec::new());
         for row in self.buffer.iter_mut() {
-            row.resize(size.0 as usize, Cell::new(' '));
+            row.resize(size.x as usize, Cell::new(' '));
         }
     }
 
@@ -48,6 +52,15 @@ pub trait CanvasLike {
     fn set(&mut self, pos: Dims, cell: Cell);
     fn pos(&self) -> Dims;
     fn size(&self) -> Dims;
+
+    // we need Self: Sized so that rust knows that we are 
+    // not using this in a trait object
+    fn setd(&mut self, pos: impl Into<Dims>, cell: Cell)
+    where
+        Self: Sized,
+    {
+        self.set(pos.into(), cell);
+    }
 }
 
 #[derive(Clone)]
@@ -71,8 +84,8 @@ impl Canvas {
             .buffer
             .borrow_mut() // from RefCell
             .buf_mut() // from Buffer
-            .get_mut(pos.1 as usize) // from &mut [Vec<Cell>]
-            .and_then(|r| r.get_mut(pos.0 as usize))
+            .get_mut(pos.y as usize) // from &mut [Vec<Cell>]
+            .and_then(|r| r.get_mut(pos.x as usize))
         {
             *c = cell;
         }
@@ -86,8 +99,8 @@ impl Canvas {
         self.buffer
             .borrow() // from RefCell
             .buf_ref() // from Buffer
-            .get(pos.1 as usize) // from &[Vec<Cell>]
-            .and_then(|r| r.get(pos.0 as usize))
+            .get(pos.y as usize) // from &[Vec<Cell>]
+            .and_then(|r| r.get(pos.x as usize))
             .copied()
     }
 
@@ -113,7 +126,7 @@ impl CanvasLike for Canvas {
         Canvas::set(self, pos, cell); // Otherwise it would be recursive
     }
     fn pos(&self) -> Dims {
-        (0, 0)
+        (0, 0).into()
     }
 
     fn size(&self) -> Dims {
@@ -139,14 +152,14 @@ where
 }
 
 pub trait CanvasLikeExt: CanvasLike {
-    fn draw<D: Drawable>(&mut self, pos: D::Pos, content: D);
+    fn draw<D: Drawable>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D);
 }
 
 impl<C> CanvasLikeExt for C
 where
     C: CanvasLike,
 {
-    fn draw<D: Drawable>(&mut self, pos: D::Pos, content: D) {
+    fn draw<D: Drawable>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D) {
         content.draw(pos, self);
     }
 }

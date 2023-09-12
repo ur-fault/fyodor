@@ -1,4 +1,4 @@
-use terminal_renderer::{canvas::CanvasLikeExt, renderer::Renderer};
+use fyodor::{canvas::CanvasLikeExt, renderer::Renderer};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut renderer = Renderer::new()?;
@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let event = crossterm::event::read()?;
 
+        renderer.on_event(&event)?;
         match event {
             crossterm::event::Event::Key(crossterm::event::KeyEvent {
                 code: crossterm::event::KeyCode::Enter,

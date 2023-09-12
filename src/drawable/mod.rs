@@ -1,11 +1,13 @@
 pub mod core_impl;
+pub mod dbox;
 pub mod extended_impl;
-pub mod mics;
+pub mod multiline;
 
-use crate::canvas::CanvasLike;
+use crate::{canvas::CanvasLike, layout::Pos};
 
 pub trait Drawable {
-    type Pos;
+    type X;
+    type Y;
 
-    fn draw(&self, pos: Self::Pos, frame: &mut impl CanvasLike);
+    fn draw(self, pos: impl Into<Pos<Self::X, Self::Y>>, frame: &mut impl CanvasLike);
 }

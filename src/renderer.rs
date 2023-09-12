@@ -10,11 +10,10 @@ use crossterm::{event::Event, execute, style::ContentStyle, QueueableCommand};
 use crate::{
     canvas::{Canvas, CanvasLike},
     cell::Cell,
+    layout::Dims,
 };
 
 use super::helpers::term_size;
-
-pub type Dims = (i32, i32);
 
 pub struct RenderSpace {
     shown: Canvas,
@@ -74,7 +73,6 @@ pub struct Renderer {
 impl Renderer {
     pub fn new() -> io::Result<Self> {
         let size = term_size();
-        let size = (size.0 as i32, size.1 as i32);
 
         let mut ren = Renderer {
             size,
@@ -140,7 +138,7 @@ impl Renderer {
 
     pub fn on_event(&mut self, event: &Event) -> io::Result<()> {
         if let Event::Resize(x, y) = event {
-            self.on_resize(Some((*x as i32, *y as i32)))?
+            self.on_resize(Some((*x as i32, *y as i32).into()))?
         }
 
         Ok(())
@@ -160,7 +158,7 @@ impl Renderer {
         let mut style = ContentStyle::default();
         tty.queue(crossterm::style::ResetColor)?;
 
-        for y in 0..self.size.1 {
+        for y in 0..self.size.y {
             if self.render_space.borrow().canvas().get_buf().buf_ref()[y as usize]
                 == self.render_space.borrow().other().get_buf().buf_ref()[y as usize]
                 && !self.full_redraw
@@ -173,7 +171,7 @@ impl Renderer {
                 y.clamp(u16::MIN as i32, u16::MAX as i32) as u16,
             ))?;
 
-            for x in 0..self.size.0 {
+            for x in 0..self.size.x {
                 if let Cell::Content(c) =
                     &self.render_space.borrow().canvas().get_buf().buf_ref()[y as usize][x as usize]
                 {

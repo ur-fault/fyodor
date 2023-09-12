@@ -1,134 +1,89 @@
 use crossterm::style::ContentStyle;
-use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use unicode_width::UnicodeWidthChar;
 
-use crate::{canvas::CanvasLike, cell::Cell, renderer::Dims};
+use crate::{
+    canvas::CanvasLike,
+    cell::Cell,
+    layout::{Dims, Pos},
+};
 
 use super::Drawable;
 
-impl<'a> Drawable for (&'a str, ContentStyle) {
-    type Pos = Dims;
+impl<'a> Drawable for (ContentStyle, &'a str) {
+    type X = i32;
+    type Y = i32;
 
-    fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
+    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+        let pos = pos.into();
+
         let mut i = 0;
-        for chr in self.0.chars() {
-            (chr, self.1).draw((pos.0 + i as i32, pos.1), frame);
+        let (style, string) = self;
+        for chr in string.chars() {
+            (style, chr).draw((pos.x + i as i32, pos.y), frame);
             i += chr.width().unwrap_or(0) as i32;
         }
     }
 }
 
-impl Drawable for (char, ContentStyle) {
-    type Pos = Dims;
+impl Drawable for (ContentStyle, char) {
+    type X = i32;
+    type Y = i32;
 
-    fn draw(&self, (x, y): Dims, frame: &mut impl CanvasLike) {
-        let style = self.1;
+    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+        let Pos { x, y } = pos.into();
+        let (style, chr) = self;
 
-        if x >= frame.size().0 || y >= frame.size().1 {
+        if x >= frame.size().x || y >= frame.size().y {
             return;
         }
 
-        let width = self.0.width().unwrap_or(0) as i32;
+        let width = chr.width().unwrap_or(0) as i32;
         if width == 0 {
             return;
         }
 
-        let cell = Cell::styled(self.0, style);
+        let cell = Cell::styled(chr, style);
 
-        frame.set((x, y), cell);
+        frame.setd((x, y), cell);
 
         for i in x + 1..x + width {
-            frame.set((i, y), Cell::PlaceHolder);
+            frame.setd((i, y), Cell::PlaceHolder);
         }
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct CenteredString<'a>(&'a str);
+pub trait Stylable: Drawable + Sized {
+    fn styled(self, style: ContentStyle) -> (ContentStyle, Self);
+    fn styled_ref(&self, style: ContentStyle) -> (ContentStyle, &Self);
+}
 
-impl<'a> CenteredString<'a> {
-    pub fn new(s: &'a str) -> Self {
-        Self(s)
+impl<D, X, Y> Stylable for D
+where
+    D: Drawable<X = X, Y = Y>,
+    (ContentStyle, D): Drawable,
+{
+    fn styled(self, style: ContentStyle) -> (ContentStyle, Self) {
+        (style, self)
+    }
+
+    fn styled_ref(&self, style: ContentStyle) -> (ContentStyle, &Self) {
+        (style, self)
     }
 }
 
-impl<'a> Drawable for CenteredString<'a> {
-    type Pos = i32;
+// pub struct X(pub i32);
+// pub struct Y(pub i32);
 
-    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
-        (*self, ContentStyle::default()).draw(y, frame);
-    }
-}
+// impl<D> Drawable for (D, X) {
+//     fn draw(self, pos: Self::Pos, frame: &mut impl CanvasLike) {
+//         self.0.draw((self.1 .0, pos).into(), frame);
+//     }
+// }
 
-impl<'a> Drawable for (CenteredString<'a>, ContentStyle) {
-    type Pos = i32;
+// impl<D: Drawable<Pos = Dims>> Drawable for (D, Y) {
+//     type Pos = i32;
 
-    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
-        let x = (frame.size().0 - self.0 .0.width() as i32) / 2;
-        (self.0 .0, self.1).draw((x, y), frame);
-    }
-}
-
-pub trait CenteredStringExt<'a> {
-    fn center(self) -> CenteredString<'a>;
-}
-
-impl<'a> CenteredStringExt<'a> for &'a str {
-    fn center(self) -> CenteredString<'a> {
-        CenteredString::new(self)
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct RightAlignedString<'a>(&'a str);
-
-impl<'a> RightAlignedString<'a> {
-    pub fn new(s: &'a str) -> Self {
-        Self(s)
-    }
-}
-
-impl<'a> Drawable for RightAlignedString<'a> {
-    type Pos = i32;
-
-    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
-        (*self, ContentStyle::default()).draw(y, frame);
-    }
-}
-
-impl<'a> Drawable for (RightAlignedString<'a>, ContentStyle) {
-    type Pos = i32;
-
-    fn draw(&self, y: i32, frame: &mut impl CanvasLike) {
-        let x = frame.size().0 - self.0 .0.width() as i32;
-        (self.0 .0, self.1).draw((x, y), frame);
-    }
-}
-
-pub trait RightAlignedStringExt<'a> {
-    fn right(self) -> RightAlignedString<'a>;
-}
-
-impl<'a> RightAlignedStringExt<'a> for &'a str {
-    fn right(self) -> RightAlignedString<'a> {
-        RightAlignedString::new(self)
-    }
-}
-
-pub struct X(pub i32);
-pub struct Y(pub i32);
-
-impl<D: Drawable<Pos = Dims>> Drawable for (D, X) {
-    type Pos = i32;
-
-    fn draw(&self, pos: Self::Pos, frame: &mut impl CanvasLike) {
-        self.0.draw((self.1 .0, pos), frame);
-    }
-}
-
-impl<D: Drawable<Pos = Dims>> Drawable for (D, Y) {
-    type Pos = i32;
-
-    fn draw(&self, pos: Self::Pos, frame: &mut impl CanvasLike) {
-        self.0.draw((pos, self.1 .0), frame);
-    }
-}
+//     fn draw(self, pos: Self::Pos, frame: &mut impl CanvasLike) {
+//         self.0.draw((pos, self.1 .0).into(), frame);
+//     }
+// }

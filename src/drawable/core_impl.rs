@@ -18,14 +18,6 @@ impl Drawable for char {
     }
 }
 
-// impl Drawable for &str {
-//     type Pos = Dims;
-
-//     fn draw(&self, pos: Dims, frame: &mut impl CanvasLike) {
-//         self.draw(pos, frame);
-//     }
-// }
-
 impl Drawable for &str {
     type X = i32;
     type Y = i32;

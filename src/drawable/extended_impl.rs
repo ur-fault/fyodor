@@ -70,20 +70,3 @@ where
         (style, self)
     }
 }
-
-// pub struct X(pub i32);
-// pub struct Y(pub i32);
-
-// impl<D> Drawable for (D, X) {
-//     fn draw(self, pos: Self::Pos, frame: &mut impl CanvasLike) {
-//         self.0.draw((self.1 .0, pos).into(), frame);
-//     }
-// }
-
-// impl<D: Drawable<Pos = Dims>> Drawable for (D, Y) {
-//     type Pos = i32;
-
-//     fn draw(self, pos: Self::Pos, frame: &mut impl CanvasLike) {
-//         self.0.draw((pos, self.1 .0).into(), frame);
-//     }
-// }

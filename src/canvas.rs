@@ -53,13 +53,22 @@ pub trait CanvasLike {
     fn pos(&self) -> Dims;
     fn size(&self) -> Dims;
 
-    // we need Self: Sized so that rust knows that we are 
+    // we need Self: Sized so that rust knows that we are
     // not using this in a trait object
     fn setd(&mut self, pos: impl Into<Dims>, cell: Cell)
     where
         Self: Sized,
     {
         self.set(pos.into(), cell);
+    }
+
+    fn fill(&mut self, cell: Cell) {
+        let size = self.size();
+        for y in 0..size.y {
+            for x in 0..size.x {
+                self.set(Pos::new(x, y), cell);
+            }
+        }
     }
 }
 

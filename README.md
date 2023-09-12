@@ -2,6 +2,10 @@
 
 Double buffered terminal renderer for Rust and crossterm
 
+## Caution
+
+Do **NOT** use this, not ready for any kind of use yet.
+
 ## Why ?
 
 I needed a simple way to render terminal based games. At first I was using [masof](https://github.com/da-x/masof//) by da-x (which this project is heavily inspired by and some code is a little too much similar to) but I wanted to have a more flexible way to render the screen. So I decided to write my own.

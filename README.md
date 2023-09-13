@@ -1,6 +1,6 @@
 # Terminal Renderer
 
-Double buffered terminal renderer for Rust and crossterm
+Double buffered terminal renderer for Rust and crossterm and simple UI framework (if you can call it that)
 
 ## Caution
 
@@ -16,15 +16,16 @@ The simplest way to use this is to create a `Renderer`, feed it events from cros
 
 ## What this is not ?
 
-This project does not handle input, communication with OS or anything like that. It is only a renderer.
+This project started as just renderer, but it evolved into a simple UI framework or something like that. Though it does not handle input and such, it just provides a way to draw UI elements to the screen. But included UI elements consume crossterm events and work with them.
 
 ## Features
 
 - [x] Double buffering
 - [x] Frames (basically rect with pos and size which can be clipped or not)
 - [x] Multiplatform
+- [ ] Basic UI elements
 - [ ] Layers
 
 ## Examples
 
-You can find them in the `examples` folder as other rust projects.
+You can find them in the `examples` folder as with other rust projects.

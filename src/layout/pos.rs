@@ -24,6 +24,14 @@ impl<X, Y> Pos<X, Y> {
     pub fn transmute(self) -> Pos<Y, X> {
         Pos::new(self.y, self.x)
     }
+
+    pub fn to<X2, Y2>(self) -> Pos<X2, Y2>
+    where
+        X: Into<X2>,
+        Y: Into<Y2>,
+    {
+        Pos::new(self.x.into(), self.y.into())
+    }
 }
 
 impl<X> Pos<X, ()> {
@@ -64,23 +72,6 @@ where
         self.y
     }
 }
-
-// impl<X, Y> Clone for Pos<X, Y>
-// where
-//     X: Clone,
-//     Y: Clone,
-// {
-//     fn clone(&self) -> Self {
-//         Self::new(self.x.clone(), self.y.clone())
-//     }
-// }
-
-// impl<X, Y> Copy for Pos<X, Y>
-// where
-//     X: Copy,
-//     Y: Copy,
-// {
-// }
 
 impl<X, Y> Pos<X, Y>
 where

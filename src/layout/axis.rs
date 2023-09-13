@@ -2,7 +2,7 @@ pub trait Axis {
     fn calc(&self, container: i32) -> i32;
 }
 
-macro_rules! impl_axis {
+macro_rules! impl_axis_for_prim {
     ($($t:ty)*) => {
         $(
             impl Axis for $t {
@@ -14,4 +14,4 @@ macro_rules! impl_axis {
     };
 }
 
-impl_axis!(i32 u32 i64 u64 i128 u128 i16 u16 i8 u8 usize isize);
+impl_axis_for_prim!(i32 u32 i64 u64 i128 u128 i16 u16 i8 u8 usize isize);

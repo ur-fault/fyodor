@@ -11,7 +11,7 @@ fn main() -> io::Result<()> {
 
     let mut style = ContentStyle::new();
     style.foreground_color = Some(Color::Red);
-    Popup::new("Popup title", ["Popup text", "Popup text 2"])
+    Popup::new("Popup title", ["Popup text", "Popup text 2", "Long Long Popup text"])
         .with_text_style(style)
         .run(&mut renderer)?;
 

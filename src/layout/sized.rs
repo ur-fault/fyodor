@@ -27,7 +27,23 @@ pub mod core_def {
         }
     }
 
-    
+    pub trait KnownHeight {
+        fn h(&self) -> i32;
+    }
+
+    macro_rules! impl_known_height {
+        ($($t:ty),*) => {
+            $(
+                impl KnownHeight for $t {
+                    fn h(&self) -> i32 {
+                        1
+                    }
+                }
+            )*
+        };
+    }
+
+    impl_known_height!(str, char, String);
 }
 
 pub enum Anchor {
@@ -53,6 +69,10 @@ impl Aligned {
 
     pub fn new_x(anchor: Anchor, child: &impl KnownWidth) -> Self {
         Self::new(anchor, child.w())
+    }
+
+    pub fn new_y(anchor: Anchor, child: &impl KnownHeight) -> Self {
+        Self::new(anchor, child.h())
     }
 }
 

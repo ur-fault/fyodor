@@ -1,9 +1,15 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::{RefCell, RefMut},
+    rc::Rc,
+};
 
 use crate::{
     canvas::CanvasLike,
     cell::Cell,
-    layout::{Dims, Pos},
+    layout::{
+        sized::{KnownHeight, KnownWidth},
+        Dims, Pos,
+    },
 };
 
 #[derive(Clone)]
@@ -44,18 +50,6 @@ impl<'a> Frame<'a> {
             self.rel_pos.x + self.parent.borrow().pos().x,
             self.rel_pos.y + self.parent.borrow().pos().y,
         )
-    }
-
-    pub fn clear(&mut self) {
-        self.fill(Cell::new(' '));
-    }
-
-    pub fn fill(&mut self, cell: Cell) {
-        for x in 0..self.size.x {
-            for y in 0..self.size.y {
-                self.set(Pos::new(x, y), cell);
-            }
-        }
     }
 
     pub fn centered(mut self, size: Dims) -> Self {
@@ -102,6 +96,55 @@ impl<'a> Frame<'a> {
         self.rel_pos.y += m;
         self.size.y = self.size.y - 2 * m;
         self
+    }
+
+    #[inline(always)]
+    pub fn ml(mut self, m: i32) -> Self {
+        self.rel_pos.x += m;
+        self.size.x -= m;
+        self
+    }
+
+    #[inline(always)]
+    pub fn mr(mut self, m: i32) -> Self {
+        self.size.x -= m;
+        self
+    }
+
+    #[inline(always)]
+    pub fn mt(mut self, m: i32) -> Self {
+        self.rel_pos.y += m;
+        self.size.y -= m;
+        self
+    }
+
+    #[inline(always)]
+    pub fn mb(mut self, m: i32) -> Self {
+        self.size.y -= m;
+        self
+    }
+
+    #[inline(always)]
+    pub fn parent_mut(&mut self) -> RefMut<dyn CanvasLike> {
+        self.parent.borrow_mut()
+    }
+}
+
+impl<C> KnownWidth for C
+where
+    C: CanvasLike,
+{
+    fn w(&self) -> i32 {
+        self.size().x
+    }
+}
+
+impl<C> KnownHeight for C
+where
+    C: CanvasLike,
+{
+    fn h(&self) -> i32 {
+        self.size().y
     }
 }
 

@@ -7,11 +7,13 @@ use crossterm::{
 
 use crate::{
     canvas::{CanvasLike, CanvasLikeExt},
-    cell::Cell,
     drawable::{dbox::Dbox, extended_impl::Stylable, Drawable},
     frame::Frame,
-    helpers::line_center,
-    layout::{Dims, Pos},
+    layout::{
+        axis::Axis,
+        sized::{Aligned, Anchor, KnownHeight, KnownWidth},
+        Dims, Pos,
+    },
     renderer::Renderer,
 };
 
@@ -74,25 +76,23 @@ impl Popup {
 
 // We impl for ref because we don't want to move the popup after each draw
 impl Drawable for &mut Popup {
-    type X = ();
-    type Y = ();
+    type X = Aligned;
+    type Y = Aligned;
 
-    fn draw(self, _: impl Into<Pos<(), ()>>, frame: &mut impl CanvasLike) {
+    fn draw(self, pos: impl Into<Pos<Aligned, Aligned>>, frame: &mut impl CanvasLike) {
         fn draw_inner(
             title: &str,
             texts: &[String],
             box_style: ContentStyle,
             text_style: ContentStyle,
-            size: Dims,
-            mut frame: Frame,
+            Pos { x, y }: Dims,
+            box_size: Dims,
+            frame: Frame,
         ) -> () {
-            let box_size = size;
-            let title_pos = line_center(0, box_size.x - 2, title.len() as i32 + 2);
-
-            frame.fill(Cell::new(' '));
-
-            let mut frame = Frame::new(frame).centered(box_size);
+            let mut frame = Frame::new(frame).ml(x).mt(y).with_size(box_size);
             let mut inner = frame.clone().mx(1).my(1);
+
+            let title_pos = Aligned::new(Anchor::Center, title.len() as i32 + 2).calc(box_size.x);
 
             frame.draw((0, 0), Dbox::new(box_size).styled(box_style));
             inner.draw((title_pos, 0), format!(" {} ", title).styled(text_style));
@@ -105,11 +105,14 @@ impl Drawable for &mut Popup {
             }
         }
 
+        let Pos { x, y } = pos.into();
+
         draw_inner(
             &self.title,
             &self.texts,
             self.box_style,
             self.text_style,
+            Pos::new(x.calc(frame.w()), y.calc(frame.h())),
             self.size(),
             Frame::new(frame),
         );
@@ -121,7 +124,13 @@ impl Window for Popup {
 
     fn run(&mut self, renderer: &mut Renderer) -> Self::Output {
         loop {
-            renderer.get_render_space().draw((), &mut *self);
+            renderer.get_render_space().draw(
+                Pos::new(
+                    Aligned::new_x(Anchor::Start, self),
+                    Aligned::new_y(Anchor::Center, self),
+                ),
+                &mut *self,
+            );
             renderer.render()?;
 
             let event = read()?;
@@ -133,5 +142,17 @@ impl Window for Popup {
 
             renderer.on_event(&event)?;
         }
+    }
+}
+
+impl KnownWidth for Popup {
+    fn w(&self) -> i32 {
+        self.size().x
+    }
+}
+
+impl KnownHeight for Popup  {
+    fn h(&self) -> i32 {
+        self.size().y
     }
 }

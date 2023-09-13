@@ -6,7 +6,7 @@ use std::{
 use crate::{
     cell::Cell,
     drawable::Drawable,
-    layout::{Dims, Pos},
+    layout::{sized::{KnownWidth, KnownHeight}, Dims, Pos},
 };
 
 pub struct Buffer {
@@ -48,7 +48,7 @@ impl Buffer {
     }
 }
 
-pub trait CanvasLike {
+pub trait CanvasLike: KnownWidth + KnownHeight {
     fn set(&mut self, pos: Dims, cell: Cell);
     fn pos(&self) -> Dims;
     fn size(&self) -> Dims;

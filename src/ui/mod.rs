@@ -1,7 +1,5 @@
 use crate::renderer::Renderer;
 
-
-
 pub mod popup;
 
 pub trait Window {

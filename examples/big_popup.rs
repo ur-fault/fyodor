@@ -19,7 +19,10 @@ fn main() -> io::Result<()> {
 
     let mut renderer = Renderer::new()?;
 
-    Popup::new(lipsum_title(), lines).run(&mut renderer)?;
+    Popup::new(lipsum_title())
+        .with_texts(lines)
+        .to_window()
+        .run(&mut renderer)?;
 
     Ok(())
 }

@@ -1,6 +1,6 @@
 [package]
 name = "fyodor"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["urfault"]
 description = "Double buffered terminal renderer for Rust"

@@ -88,7 +88,7 @@ impl Axis for Align {
     }
 }
 
-pub struct AlignedOnX<T>(T);
+pub struct AlignedOnX<T>(pub T);
 
 impl<D> Drawable for AlignedOnX<D>
 where
@@ -106,7 +106,7 @@ where
     }
 }
 
-pub struct AlignedOnY<T>(T);
+pub struct AlignedOnY<T>(pub T);
 
 impl<D> Drawable for AlignedOnY<D>
 where

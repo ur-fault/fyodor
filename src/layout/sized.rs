@@ -1,6 +1,8 @@
 pub use core_def::*;
 
-use super::axis::Axis;
+use crate::{CanvasLike, Drawable};
+
+use super::{axis::Axis, Pos};
 
 pub mod core_def {
     use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
@@ -52,13 +54,13 @@ pub enum Anchor {
     End,
 }
 
-pub struct Aligned {
+pub struct Align {
     pub margin: i32,
     pub anchor: Anchor,
     pub child: i32,
 }
 
-impl Aligned {
+impl Align {
     pub fn new(anchor: Anchor, child: i32) -> Self {
         Self {
             margin: 0,
@@ -76,12 +78,48 @@ impl Aligned {
     }
 }
 
-impl Axis for Aligned {
+impl Axis for Align {
     fn calc(&self, container: i32) -> i32 {
         match self.anchor {
             Anchor::Start => self.margin,
             Anchor::Center => (container - self.child) / 2,
             Anchor::End => container - self.child - self.margin,
         }
+    }
+}
+
+pub struct AlignedOnX<T>(T);
+
+impl<D> Drawable for AlignedOnX<D>
+where
+    D: KnownWidth + Drawable<X = i32>,
+{
+    type X = Align;
+    type Y = D::Y;
+
+    fn draw(self, pos: impl Into<Pos<Self::X, Self::Y>>, frame: &mut impl CanvasLike) {
+        let pos: Pos<_, Self::Y> = pos.into();
+
+        let x = pos.x.calc(frame.size().x);
+
+        self.0.draw((x, pos.y), frame);
+    }
+}
+
+pub struct AlignedOnY<T>(T);
+
+impl<D> Drawable for AlignedOnY<D>
+where
+    D: KnownHeight + Drawable<Y = i32>,
+{
+    type X = D::X;
+    type Y = Align;
+
+    fn draw(self, pos: impl Into<Pos<Self::X, Self::Y>>, frame: &mut impl CanvasLike) {
+        let pos: Pos<Self::X, _> = pos.into();
+
+        let y = pos.y.calc(frame.size().y);
+
+        self.0.draw((pos.x, y), frame);
     }
 }

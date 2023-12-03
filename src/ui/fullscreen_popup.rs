@@ -6,7 +6,7 @@ use crate::{
     canvas::{CanvasLike, CanvasLikeExt},
     drawable::Drawable,
     layout::{
-        sized::{Aligned, Anchor, KnownHeight, KnownWidth},
+        sized::{Align, Anchor, KnownHeight, KnownWidth},
         Pos,
     },
     renderer::Renderer,
@@ -29,8 +29,8 @@ impl Window for FullScreenPopup {
         loop {
             renderer.get_render_space().draw(
                 Pos::new(
-                    Aligned::new_x(Anchor::Center, self),
-                    Aligned::new_y(Anchor::Center, self),
+                    Align::new_x(Anchor::Center, self),
+                    Align::new_y(Anchor::Center, self),
                 ),
                 &mut *self,
             );
@@ -49,10 +49,10 @@ impl Window for FullScreenPopup {
 }
 
 impl Drawable for &mut FullScreenPopup {
-    type X = Aligned;
-    type Y = Aligned;
+    type X = Align;
+    type Y = Align;
 
-    fn draw(self, pos: impl Into<Pos<Aligned, Aligned>>, canvas: &mut impl CanvasLike) {
+    fn draw(self, pos: impl Into<Pos<Align, Align>>, canvas: &mut impl CanvasLike) {
         self.0.draw(pos, canvas);
     }
 }

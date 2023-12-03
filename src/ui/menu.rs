@@ -3,7 +3,7 @@ use crossterm::style::ContentStyle;
 use crate::{
     canvas::CanvasLike,
     drawable::Drawable,
-    layout::{sized::Aligned, Pos},
+    layout::{sized::Align, Pos},
 };
 
 pub struct Menu<T> {
@@ -39,8 +39,8 @@ impl<T> Drawable for Menu<T>
 where
     T: Into<String>,
 {
-    type X = Aligned;
-    type Y = Aligned;
+    type X = Align;
+    type Y = Align;
 
     fn draw(self, pos: impl Into<Pos<Self::X, Self::Y>>, frame: &mut impl CanvasLike) {
         todo!()

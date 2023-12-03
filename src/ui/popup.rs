@@ -6,7 +6,7 @@ use crate::{
     frame::Frame,
     layout::{
         axis::Axis,
-        sized::{Aligned, Anchor, KnownHeight, KnownWidth},
+        sized::{Align, Anchor, KnownHeight, KnownWidth},
         Dims, Pos,
     },
 };
@@ -82,10 +82,10 @@ impl Popup {
 
 // We impl for ref because we don't want to move the popup after each draw
 impl Drawable for &mut Popup {
-    type X = Aligned;
-    type Y = Aligned;
+    type X = Align;
+    type Y = Align;
 
-    fn draw(self, pos: impl Into<Pos<Aligned, Aligned>>, frame: &mut impl CanvasLike) {
+    fn draw(self, pos: impl Into<Pos<Align, Align>>, frame: &mut impl CanvasLike) {
         fn draw_inner(
             title: &str,
             texts: Option<&Vec<String>>,
@@ -98,7 +98,7 @@ impl Drawable for &mut Popup {
             let mut frame = Frame::new(frame).ml(x).mt(y).with_size(box_size);
             let mut inner = frame.clone().mx(1).my(1);
 
-            let title_pos = Aligned::new(Anchor::Center, title.w() + 2).calc(box_size.x - 2);
+            let title_pos = Align::new(Anchor::Center, title.w() + 2).calc(box_size.x - 2);
 
             frame.draw((0, 0), Dbox::new(box_size).styled(box_style));
             inner.draw((title_pos, 0), format!(" {} ", title).styled(text_style));

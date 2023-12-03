@@ -17,6 +17,12 @@ pub mod core_def {
         }
     }
 
+    impl KnownWidth for &str {
+        fn w(&self) -> i32 {
+            UnicodeWidthStr::width(*self) as i32
+        }
+    }
+
     impl KnownWidth for char {
         fn w(&self) -> i32 {
             UnicodeWidthChar::width(*self).unwrap_or(0) as i32
@@ -45,7 +51,7 @@ pub mod core_def {
         };
     }
 
-    impl_known_height!(str, char, String);
+    impl_known_height!(str, &str, char, String);
 }
 
 pub enum Anchor {

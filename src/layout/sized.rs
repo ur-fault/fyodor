@@ -75,6 +75,11 @@ impl Align {
         }
     }
 
+    pub fn with_margin(mut self, margin: i32) -> Self {
+        self.margin = margin;
+        self
+    }
+
     pub fn new_x(anchor: Anchor, child: &impl KnownWidth) -> Self {
         Self::new(anchor, child.w())
     }

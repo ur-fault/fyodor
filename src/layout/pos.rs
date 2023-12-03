@@ -48,7 +48,7 @@ impl<Y> Pos<(), Y> {
 
 impl<A> Pos<A, A>
 where
-    A: Axis + Clone,
+    A: Clone,
 {
     pub fn sq(a: A) -> Self {
         Self::new(a.clone(), a)
@@ -107,6 +107,17 @@ where
     }
 }
 
+impl<A> Add<A> for Pos<A, A>
+where
+    A: Add + Clone,
+{
+    type Output = Pos<A::Output, A::Output>;
+
+    fn add(self, rhs: A) -> Self::Output {
+        Pos::new(self.x + rhs.clone(), self.y + rhs)
+    }
+}
+
 impl<X, Y> Mul for Pos<X, Y>
 where
     X: Mul,
@@ -116,6 +127,17 @@ where
 
     fn mul(self, rhs: Self) -> Self::Output {
         Pos::new(self.x * rhs.x, self.y * rhs.y)
+    }
+}
+
+impl<A> Mul<A> for Pos<A, A>
+where
+    A: Mul + Clone,
+{
+    type Output = Pos<A::Output, A::Output>;
+
+    fn mul(self, rhs: A) -> Self::Output {
+        Pos::new(self.x * rhs.clone(), self.y * rhs)
     }
 }
 
@@ -131,6 +153,17 @@ where
     }
 }
 
+impl<A> Sub<A> for Pos<A, A>
+where
+    A: Sub + Clone,
+{
+    type Output = Pos<A::Output, A::Output>;
+
+    fn sub(self, rhs: A) -> Self::Output {
+        Pos::new(self.x - rhs.clone(), self.y - rhs)
+    }
+}
+
 impl<X, Y> Div for Pos<X, Y>
 where
     X: Div,
@@ -140,5 +173,16 @@ where
 
     fn div(self, rhs: Self) -> Self::Output {
         Pos::new(self.x / rhs.x, self.y / rhs.y)
+    }
+}
+
+impl<A> Div<A> for Pos<A, A>
+where
+    A: Div + Clone,
+{
+    type Output = Pos<A::Output, A::Output>;
+
+    fn div(self, rhs: A) -> Self::Output {
+        Pos::new(self.x / rhs.clone(), self.y / rhs)
     }
 }

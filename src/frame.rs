@@ -52,8 +52,9 @@ impl<'a> Frame<'a> {
         )
     }
 
-    pub fn centered(mut self, size: Dims) -> Self {
-        self.rel_pos = Pos::new((self.size.x - size.x) / 2, (self.size.y - size.y) / 2);
+    pub fn centered(mut self, size: impl Into<Dims>) -> Self {
+        let size = size.into();
+        self.rel_pos = (self.size - size) / 2;
         self.size = size;
         self
     }
@@ -153,10 +154,7 @@ impl<'a> CanvasLike for Frame<'a> {
         if self.clip && (pos.x < 0 || pos.y < 0 || pos.x >= self.size.x || pos.y >= self.size.y) {
             return;
         }
-        self.parent.borrow_mut().set(
-            Pos::new(pos.x + self.rel_pos.x, pos.y + self.rel_pos.y),
-            cell,
-        );
+        self.parent.borrow_mut().set(pos + self.rel_pos, cell);
     }
 
     fn pos(&self) -> Dims {

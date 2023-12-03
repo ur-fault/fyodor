@@ -15,7 +15,8 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new(size: Dims) -> Self {
+    pub fn new(size: impl Into<Dims>) -> Self {
+        let size = size.into();
         let mut buffer = Vec::new();
         for _ in 0..size.y {
             buffer.push(vec![Cell::new(' '); size.x as usize]);
@@ -31,7 +32,8 @@ impl Buffer {
         &mut self.buffer
     }
 
-    pub fn resize(&mut self, size: Dims) {
+    pub fn resize(&mut self, size: impl Into<Dims>) {
+        let size = size.into();
         if self.size == size {
             return;
         }
@@ -84,11 +86,12 @@ impl Canvas {
         }
     }
 
-    pub fn from_dims(size: Dims) -> Self {
+    pub fn from_dims(size: impl Into<Dims>) -> Self {
         Self::new(Buffer::new(size))
     }
 
-    pub fn set(&mut self, pos: Dims, cell: Cell) {
+    pub fn set(&mut self, pos: impl Into<Dims>, cell: Cell) {
+        let pos = pos.into();
         if let Some(c) = self
             .buffer
             .borrow_mut() // from RefCell
@@ -104,7 +107,8 @@ impl Canvas {
         self.buffer.borrow().size()
     }
 
-    pub fn get(&self, pos: Dims) -> Option<Cell> {
+    pub fn get(&self, pos: impl Into<Dims>) -> Option<Cell> {
+        let pos = pos.into();
         self.buffer
             .borrow() // from RefCell
             .buf_ref() // from Buffer
@@ -117,7 +121,7 @@ impl Canvas {
         self.buffer.borrow()
     }
 
-    pub fn resize(&mut self, size: Dims) {
+    pub fn resize(&mut self, size: impl Into<Dims>) {
         self.buffer.borrow_mut().resize(size);
     }
 

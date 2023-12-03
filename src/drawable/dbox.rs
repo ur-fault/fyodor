@@ -13,8 +13,8 @@ pub struct Dbox {
 }
 
 impl Dbox {
-    pub fn new(size: Dims) -> Self {
-        Self { size }
+    pub fn new(size: impl Into<Dims>) -> Self {
+        Self { size: size.into() }
     }
 }
 

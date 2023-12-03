@@ -40,7 +40,8 @@ impl RenderSpace {
         (&mut self.hidden, &mut self.shown)
     }
 
-    fn on_resize(&mut self, size: Dims) -> io::Result<()> {
+    fn on_resize(&mut self, size: impl Into<Dims>) -> io::Result<()> {
+        let size = size.into();
         self.shown.resize(size);
         self.hidden.resize(size);
 
@@ -90,8 +91,12 @@ impl Renderer {
         panic::set_hook(Box::new(move |panic_info| {
             let mut stdout = stdout();
 
-            execute!(stdout, crossterm::terminal::LeaveAlternateScreen).unwrap();
-            execute!(stdout, crossterm::cursor::Show).unwrap();
+            execute!(
+                stdout,
+                crossterm::terminal::LeaveAlternateScreen,
+                crossterm::cursor::Show
+            )
+            .unwrap();
 
             crossterm::terminal::disable_raw_mode().unwrap();
 

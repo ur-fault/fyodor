@@ -36,14 +36,14 @@ where
 }
 
 pub trait AutoY: Drawable<Y = ()> {
-    fn draw_on_y(self, x: Self::X, frame: &mut impl CanvasLike);
+    fn draw_on_x(self, x: Self::X, frame: &mut impl CanvasLike);
 }
 
 impl<D> AutoY for D
 where
     D: Drawable<Y = ()>,
 {
-    fn draw_on_y(self, x: Self::X, frame: &mut impl CanvasLike) {
+    fn draw_on_x(self, x: Self::X, frame: &mut impl CanvasLike) {
         self.draw(Pos::new_x(x.into()), frame)
     }
 }

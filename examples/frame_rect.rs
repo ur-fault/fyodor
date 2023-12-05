@@ -17,6 +17,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let event = event::read()?;
 
+        let mut canvas = renderer.canvas();
+
         renderer.on_event(&event)?;
         match event {
             Event::Key(KeyEvent {
@@ -27,25 +29,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         }
 
-        renderer.canvas().draw((0, 0), "Press Enter to exit");
-        renderer.canvas().draw(
+        canvas.show((0, 0), "Press Enter to exit");
+        canvas.show(
             (0, 1),
             "Both frame are same size, just offseted and only one is clipped",
         );
 
+        canvas.show((0, 4), "Clipped frame");
         for x in -10..frame_clip.size.x {
             for y in -5..frame_clip.size.y {
-                frame_clip.draw((x, y), "█");
+                frame_clip.show((x, y), "█");
             }
         }
-        renderer.canvas().draw((0, 4), "Clipped frame");
 
+        canvas.show((0, 19), "Unclipped frame");
         for x in -10..frame.size.x {
             for y in -5..frame.size.y {
-                frame.draw((x, y), "█");
+                frame.show((x, y), "█");
             }
         }
-        renderer.canvas().draw((0, 19), "Unclipped frame");
 
         renderer.render()?;
     }

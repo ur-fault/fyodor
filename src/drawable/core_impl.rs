@@ -7,13 +7,13 @@ use crate::{
     layout::{Dims, Pos},
 };
 
-use super::{extended_impl::Stylable, Drawable};
+use super::{Drawable, styled::Stylable};
 
 impl Drawable for char {
     type X = i32;
     type Y = i32;
 
-    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+    fn draw(&self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
         self.styled(ContentStyle::default()).draw(pos, frame);
     }
 }
@@ -22,7 +22,7 @@ impl Drawable for &str {
     type X = i32;
     type Y = i32;
 
-    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+    fn draw(&self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
         let Pos { x, y } = pos.into();
 
         let mut i = 0;
@@ -37,7 +37,7 @@ impl Drawable for String {
     type X = i32;
     type Y = i32;
 
-    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+    fn draw(&self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
         self.as_str().draw(pos, frame);
     }
 }
@@ -46,7 +46,7 @@ impl Drawable for Cell {
     type X = i32;
     type Y = i32;
 
-    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
-        frame.setd(pos, self);
+    fn draw(&self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+        frame.setd(pos, *self);
     }
 }

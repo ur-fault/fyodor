@@ -9,29 +9,41 @@ use crate::{
 
 use super::Drawable;
 
-impl<'a> Drawable for (ContentStyle, &'a str) {
+impl<D> Drawable for &D
+where
+    D: Drawable,
+{
+    type X = D::X;
+    type Y = D::Y;
+
+    fn draw(&self, pos: impl Into<Pos<Self::X, Self::Y>>, frame: &mut impl CanvasLike) {
+        (*self).draw(pos, frame);
+    }
+}
+
+impl Drawable for (ContentStyle, &&str) {
     type X = i32;
     type Y = i32;
 
-    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+    fn draw(&self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
         let pos = pos.into();
 
         let mut i = 0;
         let (style, string) = self;
         for chr in string.chars() {
-            (style, chr).draw((pos.x + i as i32, pos.y), frame);
+            (*style, &chr).draw((pos.x + i as i32, pos.y), frame);
             i += chr.width().unwrap_or(0) as i32;
         }
     }
 }
 
-impl Drawable for (ContentStyle, char) {
+impl Drawable for (ContentStyle, &char) {
     type X = i32;
     type Y = i32;
 
-    fn draw(self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+    fn draw(&self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
         let Pos { x, y } = pos.into();
-        let (style, chr) = self;
+        let (style, chr) = *self;
 
         if x >= frame.size().x || y >= frame.size().y {
             return;
@@ -42,7 +54,7 @@ impl Drawable for (ContentStyle, char) {
             return;
         }
 
-        let cell = Cell::styled(chr, style);
+        let cell = Cell::styled(*chr, style);
 
         frame.setd((x, y), cell);
 
@@ -52,21 +64,11 @@ impl Drawable for (ContentStyle, char) {
     }
 }
 
-pub trait Stylable: Drawable + Sized {
-    fn styled(self, style: ContentStyle) -> (ContentStyle, Self);
-    fn styled_ref(&self, style: ContentStyle) -> (ContentStyle, &Self);
-}
+impl Drawable for (ContentStyle, &String) {
+    type X = i32;
+    type Y = i32;
 
-impl<D, X, Y> Stylable for D
-where
-    D: Drawable<X = X, Y = Y>,
-    (ContentStyle, D): Drawable,
-{
-    fn styled(self, style: ContentStyle) -> (ContentStyle, Self) {
-        (style, self)
-    }
-
-    fn styled_ref(&self, style: ContentStyle) -> (ContentStyle, &Self) {
-        (style, self)
+    fn draw(&self, pos: impl Into<Dims>, frame: &mut impl CanvasLike) {
+        (self.0, &self.1.as_str()).draw(pos, frame);
     }
 }

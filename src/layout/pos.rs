@@ -1,5 +1,7 @@
 use std::ops::{Add, Div, Mul, Sub};
 
+use crate::Dims;
+
 use super::axis::Axis;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -78,8 +80,11 @@ where
     X: Axis,
     Y: Axis,
 {
-    pub fn calc_both(self, container: Pos<i32, i32>) -> (i32, i32) {
-        (self.x.calc(container.x), self.y.calc(container.y))
+    pub fn calc_both(self, item: Pos<i32, i32>, container: Pos<i32, i32>) -> Dims {
+        Dims::new(
+            self.x.calc(item.x, container.x),
+            self.y.calc(item.y, container.y),
+        )
     }
 }
 

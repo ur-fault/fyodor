@@ -6,7 +6,10 @@ use std::{
 use crate::{
     cell::Cell,
     drawable::Drawable,
-    layout::{sized::{KnownWidth, KnownHeight}, Dims, Pos},
+    layout::{
+        sized::{KnownHeight, KnownWidth},
+        Dims, Pos,
+    },
 };
 
 pub struct Buffer {
@@ -165,14 +168,20 @@ where
 }
 
 pub trait CanvasLikeExt: CanvasLike {
-    fn draw<D: Drawable>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D);
+    fn show<D>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D)
+    where
+        D: Drawable;
 }
 
 impl<C> CanvasLikeExt for C
 where
     C: CanvasLike,
 {
-    fn draw<D: Drawable>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D) {
+    #[inline]
+    fn show<D>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D)
+    where
+        D: Drawable,
+    {
         content.draw(pos, self);
     }
 }

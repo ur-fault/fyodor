@@ -1,4 +1,4 @@
-use fyodor::{canvas::CanvasLikeExt, renderer::Renderer};
+use fyodor::{renderer::Renderer, CanvasLikeExt};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut renderer = Renderer::new()?;
@@ -20,11 +20,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         for x in 0..SIZE.0 {
             for y in 0..SIZE.1 {
-                renderer.canvas().draw((x, y), "█");
+                renderer.canvas().show((x, y), "█");
             }
         }
 
-        renderer.canvas().draw((0, SIZE.1), "Press Enter to exit");
+        renderer
+            .canvas()
+            .show((0, SIZE.1), "Press Enter to exit");
         renderer.render()?;
     }
 

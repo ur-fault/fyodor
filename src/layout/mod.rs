@@ -2,6 +2,7 @@ pub mod axis;
 pub mod pos;
 pub mod sized;
 pub mod strings;
+pub mod align;
 
 pub use pos::*;
 

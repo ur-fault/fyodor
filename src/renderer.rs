@@ -149,6 +149,7 @@ impl Renderer {
         Ok(())
     }
 
+    // TODO: rename to something like `current_frame` since it's valid only for one frame
     pub fn canvas(&self) -> Canvas {
         self.render_space.borrow().canvas().clone()
     }
@@ -162,6 +163,8 @@ impl Renderer {
 
         let mut style = ContentStyle::default();
         tty.queue(crossterm::style::ResetColor)?;
+
+        // TODO: save render space into variable
 
         for y in 0..self.size.y {
             if self.render_space.borrow().canvas().get_buf().buf_ref()[y as usize]

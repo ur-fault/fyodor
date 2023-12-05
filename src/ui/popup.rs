@@ -1,13 +1,13 @@
 use crossterm::style::ContentStyle;
+use unicode_width::UnicodeWidthStr;
 
 use crate::{
     canvas::{CanvasLike, CanvasLikeExt},
-    drawable::{dbox::Dbox, extended_impl::Stylable, Drawable},
+    drawable::{dbox::Dbox, styled::Stylable, Drawable},
     frame::Frame,
     layout::{
-        axis::Axis,
-        sized::{Align, Anchor, KnownHeight, KnownWidth},
-        Dims, Pos,
+        sized::{KnownHeight, KnownWidth},
+        Dims, Pos, align::Align, axis::Axis,
     },
 };
 
@@ -47,10 +47,10 @@ impl Popup {
             Some(ref texts) => {
                 texts
                     .iter()
-                    .map(|t| t.chars().count())
+                    .map(|t| t.width())
                     .max()
                     .unwrap_or(0) // longest of texts
-                    .max(self.title.chars().count()) as i32
+                    .max(self.title.width()) as i32
                     + 2
                     + 2
             }
@@ -80,12 +80,11 @@ impl Popup {
     }
 }
 
-// We impl for ref because we don't want to move the popup after each draw
-impl Drawable for &mut Popup {
+impl Drawable for Popup {
     type X = Align;
     type Y = Align;
 
-    fn draw(self, pos: impl Into<Pos<Align, Align>>, frame: &mut impl CanvasLike) {
+    fn draw(&self, pos: impl Into<Pos<Align, Align>>, frame: &mut impl CanvasLike) {
         fn draw_inner(
             title: &str,
             texts: Option<&Vec<String>>,
@@ -98,28 +97,32 @@ impl Drawable for &mut Popup {
             let mut frame = Frame::new(frame).ml(x).mt(y).with_size(box_size);
             let mut inner = frame.clone().mx(1).my(1);
 
-            let title_pos = Align::new(Anchor::Center, title.w() + 2).calc(box_size.x - 2);
+            let title_size = title.width() as i32;
 
-            frame.draw((0, 0), Dbox::new(box_size).styled(box_style));
-            inner.draw((title_pos, 0), format!(" {} ", title).styled(text_style));
+            frame.show((0, 0), Dbox::new(box_size).styled(box_style));
+            inner.show(
+                (Align::Center.calc(title_size + 2, inner.w()), 0),
+                format!(" {} ", title).styled(text_style),
+            );
 
             if let Some(texts) = texts {
-                inner.draw((0, 1), "─".repeat(box_size.x as usize - 2));
+                inner.show((0, 1), "─".repeat(box_size.x as usize - 2));
                 for (i, text) in texts.iter().enumerate() {
-                    inner.draw((1, i as i32 + 2), text.styled(text_style))
+                    inner.show((1, i as i32 + 2), text.styled(text_style))
                 }
             }
         }
 
         let Pos { x, y } = pos.into();
+        let size @ Pos { x: w, y: h } = self.size();
 
         draw_inner(
             &self.title,
             self.texts.as_ref(),
             self.box_style,
             self.text_style,
-            Pos::new(x.calc(frame.w()), y.calc(frame.h())),
-            self.size(),
+            Pos::new(x.calc(w, frame.w()), y.calc(h, frame.h())),
+            size,
             Frame::new(frame),
         );
     }

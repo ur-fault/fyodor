@@ -6,7 +6,7 @@ use super::{
 
 use crossterm::style::ContentStyle;
 
-use crate::{drawable::styled::Stylable, CanvasLike, Dims, Drawable};
+use crate::{drawable::styled::Stylable, CanvasLike, Drawable};
 
 pub enum Align {
     Start,

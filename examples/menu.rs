@@ -1,15 +1,12 @@
 use crossterm::{
-    event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     style::{Color, ContentStyle},
 };
 use fyodor::{
-    layout::align::{Align, Aligned},
     renderer::Renderer,
     ui::{
         fullscreen_menu::FullscreenMenu, fullscreen_popup::FullScreenPopup, menu::Menu,
         popup::Popup, Window,
     },
-    CanvasLikeExt,
 };
 
 use std::io;

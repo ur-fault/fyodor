@@ -20,13 +20,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         for x in 0..SIZE.0 {
             for y in 0..SIZE.1 {
-                renderer.canvas().show((x, y), "█");
+                renderer.canvas().show((x, y), &'█');
             }
         }
 
         renderer
             .canvas()
-            .show((0, SIZE.1), "Press Enter to exit");
+            .show((0, SIZE.1), &"Press Enter to exit");
         renderer.render()?;
     }
 

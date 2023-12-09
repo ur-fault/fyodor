@@ -2,7 +2,7 @@ use std::{
     cell::RefCell,
     io::{self, stdout, Write},
     panic,
-    rc::Rc,
+    rc::Rc, thread,
 };
 
 use crossterm::{event::Event, execute, style::ContentStyle, QueueableCommand};
@@ -65,6 +65,8 @@ impl CanvasLike for SharedRenderSpace {
     }
 }
 
+// TODO: allow only one renderer at a time by using a global variable
+
 pub struct Renderer {
     size: Dims,
     render_space: SharedRenderSpace,
@@ -88,6 +90,7 @@ impl Renderer {
     }
 
     fn register_panic_hook(&self) {
+        // TODO: cache the old hook and set it after disabling ours
         panic::set_hook(Box::new(move |panic_info| {
             let mut stdout = stdout();
 
@@ -105,7 +108,9 @@ impl Renderer {
     }
 
     fn unregiser_panic_hook(&self) {
-        let _ = panic::take_hook();
+        if !thread::panicking() {
+            let _ = panic::take_hook();
+        }
     }
 
     fn turn_on(&mut self) -> io::Result<()> {
@@ -146,6 +151,8 @@ impl Renderer {
             self.on_resize(Some((*x as i32, *y as i32).into()))?
         }
 
+        // TODO: exit on CTRL+C
+
         Ok(())
     }
 
@@ -184,6 +191,7 @@ impl Renderer {
                     &self.render_space.borrow().canvas().get_buf().buf_ref()[y as usize][x as usize]
                 {
                     if style != c.style {
+                        // TODO: rewrite using `if let Some(...) = ...
                         if style.background_color != c.style.background_color {
                             match c.style.background_color {
                                 Some(x) => {

@@ -168,7 +168,7 @@ where
 }
 
 pub trait CanvasLikeExt: CanvasLike {
-    fn show<D>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D)
+    fn show<D>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: &D)
     where
         D: Drawable;
 }
@@ -178,7 +178,7 @@ where
     C: CanvasLike,
 {
     #[inline]
-    fn show<D>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: D)
+    fn show<D>(&mut self, pos: impl Into<Pos<D::X, D::Y>>, content: &D)
     where
         D: Drawable,
     {

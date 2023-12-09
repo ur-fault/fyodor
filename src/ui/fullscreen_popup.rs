@@ -24,13 +24,13 @@ impl FullScreenPopup {
 }
 
 impl Window for FullScreenPopup {
-    type Output = io::Result<KeyCode>;
+    type Output<'a> = KeyCode;
 
-    fn run(&mut self, renderer: &mut Renderer) -> Self::Output {
+    fn run(&mut self, renderer: &mut Renderer) -> io::Result<Self::Output<'_>> {
         loop {
             renderer
                 .get_render_space()
-                .show((Align::Center, Align::Center), &mut *self);
+                .show((Align::Center, Align::Center), self);
             renderer.render()?;
 
             let event = read()?;
@@ -45,7 +45,7 @@ impl Window for FullScreenPopup {
     }
 }
 
-impl Drawable for &mut FullScreenPopup {
+impl Drawable for FullScreenPopup {
     type X = Align;
     type Y = Align;
 

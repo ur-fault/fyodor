@@ -34,6 +34,7 @@ pub struct Menu<T> {
 
 impl<T> Menu<T> {
     pub fn new(title: String) -> Self {
+        // TODO: allow Into<String>
         Self {
             title,
             items: Vec::new(),
@@ -49,6 +50,10 @@ impl<T> Menu<T> {
     pub fn with_items(mut self, items: Vec<T>) -> Self {
         self.items = items;
         self
+    }
+
+    pub fn items(&self) -> &[T] {
+        self.items.as_ref()
     }
 }
 
@@ -67,6 +72,14 @@ impl<T> Menu<T> {
 
     pub fn select(&mut self, i: usize) {
         self.selected = i.clamp(0, self.items.len() - 1);
+    }
+
+    pub fn first(&mut self) {
+        self.selected = 0;
+    }
+
+    pub fn last(&mut self) {
+        self.selected = self.items.len() - 1;
     }
 
     pub fn up(&mut self, c: usize) {
@@ -107,14 +120,14 @@ where
 
         frame.show(
             (1, 2),
-            "─".repeat(size.x as usize - 2).styled(self.box_style),
+            &"─".repeat(size.x as usize - 2).styled(self.box_style),
         );
 
         let title = format!(" {} ", self.title);
 
         frame.show(
             (Align::Center, 1),
-            AlignedOnX(title.as_str()).styled(self.text_style),
+            &AlignedOnX(title.as_str()).styled(self.text_style),
         );
 
         let mut y = 3;
@@ -131,11 +144,11 @@ where
             let item = item.styled(style);
 
             if selected {
-                frame.show((1, y), "> ".styled(style));
+                frame.show((1, y), &"> ".styled(style));
             }
 
             if self.numbered {
-                frame.show((3, y), format!("{}. ", i + 1).styled(style));
+                frame.show((3, y), &format!("{}. ", i + 1).styled(style));
             }
 
             let numbered_len = if self.numbered {
@@ -144,7 +157,7 @@ where
                 0
             };
 
-            frame.show((numbered_len + 3, y), item);
+            frame.show((numbered_len + 3, y), &item);
 
             y += h;
         }

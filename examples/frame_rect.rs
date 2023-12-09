@@ -29,23 +29,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         }
 
-        canvas.show((0, 0), "Press Enter to exit");
+        canvas.show((0, 0), &"Press Enter to exit");
         canvas.show(
             (0, 1),
-            "Both frame are same size, just offseted and only one is clipped",
+            &"Both frame are same size, just offseted and only one is clipped",
         );
 
-        canvas.show((0, 4), "Clipped frame");
+        canvas.show((0, 4), &"Clipped frame");
         for x in -10..frame_clip.size.x {
             for y in -5..frame_clip.size.y {
-                frame_clip.show((x, y), "█");
+                frame_clip.show((x, y), &"█");
             }
         }
 
-        canvas.show((0, 19), "Unclipped frame");
+        canvas.show((0, 19), &"Unclipped frame");
         for x in -10..frame.size.x {
             for y in -5..frame.size.y {
-                frame.show((x, y), "█");
+                frame.show((x, y), &"█");
             }
         }
 

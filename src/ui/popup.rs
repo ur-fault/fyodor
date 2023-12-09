@@ -6,8 +6,10 @@ use crate::{
     drawable::{dbox::Dbox, styled::Stylable, Drawable},
     frame::Frame,
     layout::{
+        align::Align,
+        axis::Axis,
         sized::{KnownHeight, KnownWidth},
-        Dims, Pos, align::Align, axis::Axis,
+        Dims, Pos,
     },
 };
 
@@ -21,9 +23,7 @@ pub struct Popup {
 }
 
 impl Popup {
-    pub fn new<S>(title: S) -> Self
-    where
-        S: Into<String>,
+    pub fn new(title: impl Into<String>) -> Self
     {
         Self {
             title: title.into(),
@@ -99,16 +99,16 @@ impl Drawable for Popup {
 
             let title_size = title.width() as i32;
 
-            frame.show((0, 0), Dbox::new(box_size).styled(box_style));
+            frame.show((0, 0), &Dbox::new(box_size).styled(box_style));
             inner.show(
                 (Align::Center.calc(title_size + 2, inner.w()), 0),
-                format!(" {} ", title).styled(text_style),
+                &format!(" {} ", title).styled(text_style),
             );
 
             if let Some(texts) = texts {
-                inner.show((0, 1), "─".repeat(box_size.x as usize - 2));
+                inner.show((0, 1), &"─".repeat(box_size.x as usize - 2));
                 for (i, text) in texts.iter().enumerate() {
-                    inner.show((1, i as i32 + 2), text.styled(text_style))
+                    inner.show((1, i as i32 + 2), &text.styled(text_style))
                 }
             }
         }

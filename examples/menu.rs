@@ -5,7 +5,10 @@ use crossterm::{
 use fyodor::{
     layout::align::{Align, Aligned},
     renderer::Renderer,
-    ui::menu::Menu,
+    ui::{
+        fullscreen_menu::FullscreenMenu, fullscreen_popup::FullScreenPopup, menu::Menu,
+        popup::Popup, Window,
+    },
     CanvasLikeExt,
 };
 
@@ -27,8 +30,8 @@ fn main() -> io::Result<()> {
     //     Menu::new("Submenu 2".to_string()).with_items(vec!["Item 2 1", "Item 2 2"]),
     // ]);
     let pink = (227, 166, 211);
-    menu.box_style = new_foreground(Color::Red);
-    menu.text_style = new_foreground(Color::DarkMagenta);
+    menu.box_style = new_foreground(pink.into());
+    menu.text_style = new_foreground(pink.into());
     menu.item_style = new_foreground(pink.into());
     menu.selected_style = Some(ContentStyle {
         foreground_color: Some(Color::Black),
@@ -36,49 +39,14 @@ fn main() -> io::Result<()> {
         ..Default::default()
     });
 
-    let mut menu = Aligned(menu);
+    let mut menu = FullscreenMenu::new(menu);
 
-    let selected = loop {
-        let mut canvas = renderer.canvas();
+    let selected = menu.run(&mut renderer)?;
 
-        canvas.show((Align::Center, Align::Center), &menu);
-
-        renderer.render()?;
-
-        let event = crossterm::event::read()?;
-
-        renderer.on_event(&event)?;
-        match event {
-            Event::Key(KeyEvent {
-                code,
-                kind,
-                modifiers,
-                ..
-            }) if kind != KeyEventKind::Release => match code {
-                KeyCode::Char('w' | 'W') | KeyCode::Up => {
-                    menu.0.up(1);
-                }
-                KeyCode::Char('s' | 'S') | KeyCode::Down => {
-                    menu.0.down(1);
-                }
-                KeyCode::Char('q' | 'Q') => {
-                    break None;
-                }
-                KeyCode::Char('c') if modifiers == KeyModifiers::CONTROL => {
-                    break None;
-                }
-                KeyCode::Enter => {
-                    break Some(menu.0.selected().unwrap());
-                }
-                _ => {}
-            },
-            _ => {}
-        }
-    };
+    FullScreenPopup::new(Popup::new("Selected item").with_texts(vec![format!("{:?}", selected)]))
+        .run(&mut renderer)?;
 
     drop(renderer);
-
-    println!("Selected: {:?}", selected);
 
     Ok(())
 }
